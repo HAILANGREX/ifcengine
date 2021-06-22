@@ -1394,6 +1394,41 @@ public class IfcFile {/*IFCPROPERTYSET*/
         return childmap;
     }
 
+    public Map<String, List<String>> getPortConnect() {
+        Map<String, String> connectelement = this.getConnectElement();
+        Map<String, List<String>> connect = new HashMap<String, List<String>>();
+        if (mapType2Line.containsKey(IfcPropertyType.IFC_TYPE_IFCRELCONNECTSPORTS)) {
+            for (Integer line : mapType2Line.get(IfcPropertyType.IFC_TYPE_IFCRELCONNECTSPORTS)) {
+                List<String> ifcProperties = getIfcPropertiesByLineData(data.get(line));
+                List<String> portProperties = getIfcPropertiesByLineData(data.get(getInteger(ifcProperties.get(4)))); data.get(line);
+
+                if (!portProperties.get(2).equals('$')){
+                    if (portProperties.get(2).toLowerCase().contains("inport")){
+                        String key = getGuidByLine(getInteger(connectelement.get(ifcProperties.get(4)))) ;
+                        String rawCon = getGuidByLine(getInteger(connectelement.get(ifcProperties.get(5))));
+                        if (!connect.containsKey(rawCon)) {
+                            List<String> lstTemp = new ArrayList<String>();
+                            connect.put(rawCon, lstTemp);
+                        }
+                        connect.get(rawCon).add(key);
+                    }
+                    if (portProperties.get(2).toLowerCase().contains("outport")){
+                        String key = getGuidByLine(getInteger(connectelement.get(ifcProperties.get(4)))) ;
+                        String rawCon = getGuidByLine(getInteger(connectelement.get(ifcProperties.get(5)))); /* 去掉左右括号*/
+                        if (!connect.containsKey(key)) {
+                            List<String> lstTemp = new ArrayList<String>();
+                            connect.put(key, lstTemp);
+                        }
+                        connect.get(key).add(rawCon);
+                    }
+
+                }
+
+            }
+        }
+        return connect;
+    }
+
     public List<IfcMeshEntity> getGeometryInTriangles(List<String> lstSlices, IfcMeshInterface ifcMeshInterface, String modelKey) throws RenderEngineException {/*List<IfcMeshEntity> lstIfcGeom = new ArrayList<IfcMeshEntity>(); for(StringBuilder sb : lstSlices){ InputStream is =  new   ByteArrayInputStream(sb.toString().getBytes()); IfcGeoParser ifcGeoParser = new IfcGeoParser(is); lstIfcGeom.addAll(ifcGeoParser.getGeomServerClientEntities()); } return lstIfcGeom;*/
         List<IfcMeshEntity> lstMeshes;
         try {
